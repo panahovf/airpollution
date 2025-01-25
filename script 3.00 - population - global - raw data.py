@@ -88,18 +88,19 @@ with rasterio.open(tif_file) as dataset:
                 'population': pixel_values
             })
             
-            # Step 4: Apply transformation to Lon and Lat (round to 2 decimal places)
+            # Step 4: Enforce the Lon/Lat format
             df_chunk = df_chunk.with_columns([
-                (pl.col('Lon') * 100).floor() / 100,
-                (pl.col('Lat') * 100).floor() / 100
-            ])
+                (((pl.col('Lon') - 0.05) / 0.1).round(0) * 0.1 + 0.05).alias('Lon'),
+                (((pl.col('Lat') - 0.05) / 0.1).round(0) * 0.1 + 0.05).alias('Lat')
+                ])
             
-            # Step 5: Enforce the Lon/Lat format
+            # Step 5: Apply transformation to Lon and Lat (round to 2 decimal places)
             df_chunk = df_chunk.with_columns([
-                ((pl.col('Lon') - 0.05) / 0.1).round() * 0.1 + 0.05,
-                ((pl.col('Lat') - 0.05) / 0.1).round() * 0.1 + 0.05
-            ])
+                pl.col('Lon').round(2).alias('Lon'),
+                pl.col('Lat').round(2).alias('Lat')
+                ])
             
+                        
             # **Filtering: Remove rows where 'population' is zero or negative**
             df_chunk = df_chunk.filter(pl.col('population') > 0)
             
@@ -157,22 +158,23 @@ print(chunk_num)
 # Print the first 10 rows of the final DataFrame
 print(df_overall.head(10))
 
-# ┌─────────┬────────┬─────────────┐
-# │ Lon     ┆ Lat    ┆ population  │
-# │ ---     ┆ ---    ┆ ---         │
-# │ f64     ┆ f64    ┆ f64         │
-# ╞═════════╪════════╪═════════════╡
-# │ 45.85   ┆ 36.65  ┆ 4.575215    │
-# │ -63.35  ┆ -10.05 ┆ 1617.909378 │
-# │ 8.95    ┆ 47.95  ┆ 6487.507689 │
-# │ 30.95   ┆ -25.75 ┆ 6394.52442  │
-# │ -71.55  ┆ -45.55 ┆ 178.591444  │
-# │ 37.15   ┆ -1.85  ┆ 6820.011595 │
-# │ -69.75  ┆ 1.75   ┆ 1792.402471 │
-# │ 71.95   ┆ 35.15  ┆ 77740.84904 │
-# │ -112.85 ┆ 34.65  ┆ 1.449659    │
-# │ 46.55   ┆ 42.45  ┆ 8255.225532 │
-# └─────────┴────────┴─────────────┘
+# shape: (10, 3)
+# ┌─────────┬───────┬───────────────┐
+# │ Lon     ┆ Lat   ┆ population    │
+# │ ---     ┆ ---   ┆ ---           │
+# │ f64     ┆ f64   ┆ f64           │
+# ╞═════════╪═══════╪═══════════════╡
+# │ -80.55  ┆ 34.45 ┆ 1783.369432   │
+# │ -116.85 ┆ 57.85 ┆ 39.774345     │
+# │ 47.55   ┆ 34.65 ┆ 450.424451    │
+# │ -76.25  ┆ 39.05 ┆ 617.009671    │
+# │ 32.05   ┆ 38.95 ┆ 204.347319    │
+# │ -107.55 ┆ 49.05 ┆ 5.826154      │
+# │ 85.65   ┆ 26.75 ┆ 157652.356349 │
+# │ 94.95   ┆ 15.85 ┆ 1993.835164   │
+# │ -58.45  ┆ -1.75 ┆ 13.499855     │
+# │ 102.35  ┆ -3.95 ┆ 26658.963164  │
+# └─────────┴───────┴───────────────┘
 
 
 # Remove NAs if any

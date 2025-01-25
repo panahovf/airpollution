@@ -79,21 +79,22 @@ df_concentration_baseline = df_concentration_baseline.filter(pl.col('concentrati
 
 # this data is already given in 0.1 increment for 2 decimal level Lon/Lat starting at 0.05 level
 # i.e. 0.05, 0.15, 0.25 etc.
-# rounding in case there are more digits in come numbers
+# Step 1: Enforce the format of 0.05 + 0.1 start and increments for Lon and Lat
 df_concentration_baseline = df_concentration_baseline.with_columns([
-    ((pl.col("Lon").round(2))),
-    ((pl.col("Lat").round(2)))
+    (((pl.col("Lon") - 0.05) / 0.1).round(0) * 0.1 + 0.05).alias("Lon"),
+    (((pl.col("Lat") - 0.05) / 0.1).round(0) * 0.1 + 0.05).alias("Lat")
 ])
 
-# enfortcing the formatof 0.05 + 0.1 start and increments
+# Step 2: Round Lon and Lat to two decimal places
 df_concentration_baseline = df_concentration_baseline.with_columns([
-    ((pl.col("Lon") - 0.05) / 0.1).round(0) * 0.1 + 0.05,
-    ((pl.col("Lat") - 0.05) / 0.1).round(0) * 0.1 + 0.05
+    pl.col("Lon").round(2).alias("Lon"),
+    pl.col("Lat").round(2).alias("Lat")
 ])
 
 # print
 print(df_concentration_baseline.head(10))
 
+# shape: (10, 3)
 # ┌─────────┬───────┬───────────────┐
 # │ Lon     ┆ Lat   ┆ concentration │
 # │ ---     ┆ ---   ┆ ---           │

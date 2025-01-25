@@ -7,7 +7,7 @@
 
 # Steps: Map grid level 'fractional contribution' data onto countries. 
 #   Source: script 100 output, which combined raw datafiles and grouped lon/lat by 2 decimal points
-#   Source: Global share data: 
+#   Source: Countries --- https://datacatalog.worldbank.org/search/dataset/0038272/World-Bank-Official-Boundaries
 
 
 
@@ -45,12 +45,6 @@ del directory
 # load fractional cotribution data
 df_fractional = pd.read_csv('2 - output/script 1/s1.00 - 1 - frac dist - global.csv')
 
-
-# load countries
-df_world = gpd.read_file("1 - input/2 - global map/ne_110m_admin_0_countries.shp")
-print(df_world.crs) # EPSG:4326
-
-
 # Convert fractional contribution to polygons
 df_fractional['geometry'] = df_fractional.apply(lambda row: Point(row['Lon'], row['Lat']), axis=1)
 df_fractional = gpd.GeoDataFrame(df_fractional, geometry='geometry')
@@ -62,11 +56,24 @@ df_fractional = gpd.GeoDataFrame(
 )
 
 
+
+# load countries
+df_world = gpd.read_file("1 - input/2 - global map/wb_countries_admin0_10m/WB_countries_Admin0_10m.shp")
+print(df_world.crs) # EPSG:4326
+
+# fix some items manually --- 3 countries dont have names / a few -99 values left to be removed too
+df_world.loc[df_world['FORMAL_EN'] == "French Republic", 'ISO_A3'] = "FRA"
+df_world.loc[df_world['FORMAL_EN'] == "Kingdom of Norway", 'ISO_A3'] = "NOR"
+df_world.loc[df_world['FORMAL_EN'] == "Republic of Kosovo", 'ISO_A3'] = "KSV"
+df_world = df_world.loc[df_world['ISO_A3'] != "-99"]
+
+# there are some countries with multiple lines, combining them
+df_world_combined = df_world.dissolve(by="ISO_A3").reset_index()
+
+
 # get country lists
-country_codes = list(df_world['GU_A3'].unique()) # using GU_A3 for country classification --- there are some errors (-99) in ISO_A3
+country_codes = list(df_world_combined['ISO_A3'].unique()) 
 df_country_codes = pd.DataFrame(country_codes, columns = ["country_code"])
-
-
 
 
 
@@ -88,7 +95,7 @@ for country_code in country_codes:
     print("Start: ", country_code)
     
     # Get the country's geometry (polygon or multipolygon)
-    temp_country = df_world[df_world['GU_A3'] == country_code]
+    temp_country = df_world[df_world['ISO_A3'] == country_code]
     temp_geom = temp_country['geometry'].iloc[0]
     
     # Get the bounds (min and max longitude and latitude)
@@ -104,7 +111,7 @@ for country_code in country_codes:
     temp_fractional_country = gpd.sjoin(temp_fractional_filtered, temp_country, how='inner', predicate='within')
 
     # keep only required columns
-    temp_fractional_country = temp_fractional_country[['Lon', 'Lat', 'ENEcoal', 'ENEother', 'GU_A3']].reset_index(drop=True)
+    temp_fractional_country = temp_fractional_country[['Lon', 'Lat', 'ENEcoal', 'ENEother', 'ISO_A3']].reset_index(drop=True)
 
     # Append the result to the list
     df_fractional_country.append(temp_fractional_country)
@@ -122,22 +129,24 @@ del df_fractional
 # Print the first 10 rows of the final DataFrame
 print(df_fractional_country.head(10))
 
-#       Lon    Lat   ENEcoal  ENEother ISO_A3
-# 0 -179.95 -16.45  0.000910  0.004700    FJI
-# 1 -179.95 -16.35  0.000910  0.004700    FJI
-# 2 -179.95 -16.25  0.000910  0.004700    FJI
-# 3 -179.95 -16.15  0.000910  0.004700    FJI
-# 4 -179.85 -16.15  0.000910  0.004700    FJI
-# 5 -179.85 -16.05  0.000910  0.004700    FJI
-# 6  177.35 -17.95  0.002158  0.022856    FJI
-# 7  177.35 -17.85  0.002130  0.023120    FJI
-# 8  177.35 -17.75  0.002130  0.023120    FJI
-# 9  177.45 -18.15  0.002270  0.021800    FJI
+#      Lon    Lat  ENEcoal  ENEother ISO_A3
+# 0 -70.05  12.55  0.00059   0.02476    ABW
+# 1  60.55  33.65  0.01384   0.04461    AFG
+# 2  60.55  33.75  0.01384   0.04461    AFG
+# 3  60.55  33.85  0.01384   0.04461    AFG
+# 4  60.55  33.95  0.01384   0.04461    AFG
+# 5  60.55  34.05  0.01500   0.04820    AFG
+# 6  60.55  34.15  0.01500   0.04820    AFG
+# 7  60.65  32.85  0.01066   0.03688    AFG
+# 8  60.65  32.95  0.01066   0.03688    AFG
+# 9  60.65  33.05  0.01208   0.04033    AFG
 
 
+# list of countries
+df_country_codes['in_fractional_country'] = df_country_codes['country_code'].isin(df_fractional_country['ISO_A3'].unique())
 
-
-
+# delete
+del df_world, df_world_combined
 
 
 

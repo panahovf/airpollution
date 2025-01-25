@@ -79,14 +79,14 @@ for chunk_lonlat, chunk_enecoal, chunk_eneother in zip(
     combined_chunk['ENEcoal'] = chunk_enecoal['ENEcoal']
     combined_chunk['ENEother'] = chunk_eneother['ENEother']
     
-    # Step 2: Apply transformation to Lon and Lat (round to 2 decimal places)
-    combined_chunk['Lon'] = (combined_chunk['Lon'] * 100).round() / 100
-    combined_chunk['Lat'] = (combined_chunk['Lat'] * 100).round() / 100
-    
-    # Step 3: Enforce the format for Lon/Lat columns
+    # Step 2: Enforce the format for Lon/Lat columns
     combined_chunk['Lon'] = ((combined_chunk['Lon'] - 0.05) / 0.1).round(0) * 0.1 + 0.05
     combined_chunk['Lat'] = ((combined_chunk['Lat'] - 0.05) / 0.1).round(0) * 0.1 + 0.05
     
+    # Step 3: Apply transformation to Lon and Lat (round to 2 decimal places)
+    combined_chunk['Lon'] = (combined_chunk['Lon'] * 100).round() / 100
+    combined_chunk['Lat'] = (combined_chunk['Lat'] * 100).round() / 100
+        
     # Step 4: Group by Lon and Lat within this chunk and calculate the mean
     chunk_grouped = combined_chunk.groupby(['Lon', 'Lat'], as_index=False).agg({
         'ENEcoal': 'mean',

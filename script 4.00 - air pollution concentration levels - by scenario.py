@@ -274,13 +274,13 @@ df_concentration_max = df_concentration_max[df_concentration_max['Current_level'
          
 # create dataframes with reduction for each fuel type individually
 df_concentration_nz_total = df_concentration_nz.copy()
-df_concentration_nz_total = df_concentration_nz_total[df_concentration_nz_total['GU_A3'].isin(df_nz_power_reduction['Region'])]
+df_concentration_nz_total = df_concentration_nz_total[df_concentration_nz_total['ISO_A3'].isin(df_nz_power_reduction['Region'])]
 
 df_concentration_cp_total = df_concentration_cp.copy()
-df_concentration_cp_total = df_concentration_cp_total[df_concentration_cp_total['GU_A3'].isin(df_cp_power_reduction['Region'])]
+df_concentration_cp_total = df_concentration_cp_total[df_concentration_cp_total['ISO_A3'].isin(df_cp_power_reduction['Region'])]
 
 df_concentration_max_total = df_concentration_max.copy()
-df_concentration_max_total = df_concentration_max_total[df_concentration_max_total['GU_A3'].isin(df_max_power_reduction['Region'])]
+df_concentration_max_total = df_concentration_max_total[df_concentration_max_total['ISO_A3'].isin(df_max_power_reduction['Region'])]
 
 
 
@@ -290,12 +290,12 @@ df_concentration_max_total = df_concentration_max_total[df_concentration_max_tot
 results = []
 
 # Get unique countries in GU_A3
-countries = df_concentration_nz_total['GU_A3'].unique()
+countries = df_concentration_nz_total['ISO_A3'].unique()
 
 # Loop over each country
 for country in countries:
     # Filter the concentration DataFrame and reduction DataFrame for the current country
-    df_country = df_concentration_nz_total[df_concentration_nz_total['GU_A3'] == country].copy()
+    df_country = df_concentration_nz_total[df_concentration_nz_total['ISO_A3'] == country].copy()
     
     coal_reduction = df_nz_power_reduction[
         (df_nz_power_reduction['fuel_type'] == 'Coal') & 
@@ -331,12 +331,12 @@ df_concentration_nz_total = pd.concat(results, ignore_index=True)
 results = []
 
 # Get unique countries in GU_A3
-countries = df_concentration_cp_total['GU_A3'].unique()
+countries = df_concentration_cp_total['ISO_A3'].unique()
 
 # Loop over each country
 for country in countries:
     # Filter the concentration DataFrame and reduction DataFrame for the current country
-    df_country = df_concentration_cp_total[df_concentration_cp_total['GU_A3'] == country].copy()
+    df_country = df_concentration_cp_total[df_concentration_cp_total['ISO_A3'] == country].copy()
     
     coal_reduction = df_cp_power_reduction[
         (df_cp_power_reduction['fuel_type'] == 'Coal') & 
@@ -374,12 +374,12 @@ df_concentration_cp_total = pd.concat(results, ignore_index=True)
 results = []
 
 # Get unique countries in GU_A3
-countries = df_concentration_max_total['GU_A3'].unique()
+countries = df_concentration_max_total['ISO_A3'].unique()
 
 # Loop over each country
 for country in countries:
     # Filter the concentration DataFrame and reduction DataFrame for the current country
-    df_country = df_concentration_max_total[df_concentration_max_total['GU_A3'] == country].copy()
+    df_country = df_concentration_max_total[df_concentration_max_total['ISO_A3'] == country].copy()
     
     coal_reduction = df_max_power_reduction[
         (df_max_power_reduction['fuel_type'] == 'Coal') & 
@@ -433,7 +433,7 @@ df_concentration_max_total = pd.merge(df_concentration_max_total, df_population,
 
 # check sum total of missing population due to match
 print((df_population['population'].sum() - df_concentration_nz_total['population'].sum())/10**9, "billion")
-# 1.651021165900095 billion
+# 0.5181503543876352 billion
 
 
 
