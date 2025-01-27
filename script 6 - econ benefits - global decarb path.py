@@ -44,8 +44,8 @@ del directory
 
 # --------------
 # MORTALITY DATA
-df_annual_mortality_cp_total = pd.read_excel('2 - output/script 5/s5.20 - 1 - annual mortality by country - current policy.xlsx')
-df_annual_mortality_nz_total = pd.read_excel('2 - output/script 5/s5.20 - 2 - annual mortality by country - nz 1.5c.xlsx')
+df_annual_mortality_cp_total = pd.read_excel('2 - output/script 5/s5.10 - 1 - annual mortality by country - current policy.xlsx')
+df_annual_mortality_nz_total = pd.read_excel('2 - output/script 5/s5.10 - 2 - annual mortality by country - nz 1.5c.xlsx')
 
 
 # --------------

@@ -44,8 +44,8 @@ del directory
 
 # --------------
 # MORTALITY DATA
-df_annual_mortality_cp_total = pd.read_excel('2 - output/script 5/s5.10 - 1 - annual mortality by country - current policy.xlsx')
-df_annual_mortality_nz_total = pd.read_excel('2 - output/script 5/s5.10 - 2 - annual mortality by country - nz 1.5c.xlsx')
+df_annual_mortality_cp_total = pd.read_excel('2 - output/script 5/s5.20 - 1 - annual mortality by country - current policy - response lower.xlsx')
+df_annual_mortality_nz_total = pd.read_excel('2 - output/script 5/s5.20 - 2 - annual mortality by country - nz 1.5c - response lower.xlsx')
 
 
 # --------------
@@ -255,10 +255,10 @@ del filtered_data_cp, filtered_data_nz, results, master_developed, master_develo
 
 # --------------
 # annual concentration levels - grid
-master.to_excel('2 - output/script 6/s6.00_- 1 - annual economic benefits.xlsx', index = False)
+master.to_excel('2 - output/script 6/s6.10_- 1 - annual economic benefits - response lower.xlsx', index = False)
 
 
 # tables
-df_benefit.to_excel('2 - output/script 6/s6.00_- 2.1 - table - economic benefits.xlsx', index = False)
-df_death.to_excel('2 - output/script 6/s6.00_- 2.2 - table - avoided death.xlsx', index = False)
+df_benefit.to_excel('2 - output/script 6/s6.10_- 2.1 - table - economic benefits - response lower.xlsx', index = False)
+df_death.to_excel('2 - output/script 6/s6.10_- 2.2 - table - avoided death - response lower.xlsx', index = False)
 

@@ -141,20 +141,20 @@ df_annual_response_cp_total = df_concentration_cp.copy()
 
 
 # df_annual_response_cp_total
-df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_ihd[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_copd[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_lri[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_ihd[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_copd[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_lri[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
 
 df_annual_response_cp_total.drop(columns=['exposure', 'exposure_x', 'exposure_y'], inplace=True)   ### this step just renames columns, otherwise you get an error
-df_annual_response_cp_total.rename(columns={'mean_x': 'ihd', 'mean_y': 'copd', 'mean': 'lri'}, inplace=True)
+df_annual_response_cp_total.rename(columns={'upper_x': 'ihd', 'upper_y': 'copd', 'upper': 'lri'}, inplace=True)
 
 
-df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_lung[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_stroke[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_t2d[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_lung[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_stroke[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_cp_total = pd.merge(df_annual_response_cp_total, df_response_t2d[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
 
 df_annual_response_cp_total.drop(columns=['exposure', 'exposure_x', 'exposure_y'], inplace=True)
-df_annual_response_cp_total.rename(columns={'mean_x': 'lung', 'mean_y': 'stroke', 'mean': 't2d'}, inplace=True)
+df_annual_response_cp_total.rename(columns={'upper_x': 'lung', 'upper_y': 'stroke', 'upper': 't2d'}, inplace=True)
 
 
 
@@ -164,20 +164,20 @@ df_annual_response_nz_total = df_concentration_nz.copy()
 
 
 # df_annual_response_cp_total
-df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_ihd[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_copd[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_lri[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_ihd[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_copd[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_lri[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
 
 df_annual_response_nz_total.drop(columns=['exposure', 'exposure_x', 'exposure_y'], inplace=True)   ### this step just renames columns, otherwise you get an error
-df_annual_response_nz_total.rename(columns={'mean_x': 'ihd', 'mean_y': 'copd', 'mean': 'lri'}, inplace=True)
+df_annual_response_nz_total.rename(columns={'upper_x': 'ihd', 'upper_y': 'copd', 'upper': 'lri'}, inplace=True)
 
 
-df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_lung[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_stroke[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
-df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_t2d[['exposure', 'mean']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_lung[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_stroke[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
+df_annual_response_nz_total = pd.merge(df_annual_response_nz_total, df_response_t2d[['exposure', 'upper']], left_on='concentration', right_on='exposure', how='left')
 
 df_annual_response_nz_total.drop(columns=['exposure', 'exposure_x', 'exposure_y'], inplace=True)
-df_annual_response_nz_total.rename(columns={'mean_x': 'lung', 'mean_y': 'stroke', 'mean': 't2d'}, inplace=True)
+df_annual_response_nz_total.rename(columns={'upper_x': 'lung', 'upper_y': 'stroke', 'upper': 't2d'}, inplace=True)
 
 
 
@@ -384,8 +384,8 @@ df_annual_mortality_nz_total['annual mortality nogrowth'] = (
 
 # --------------
 # mortality - annual result - no population growth
-df_annual_mortality_cp_total.to_excel('2 - output/script 5/s5.10 - 1 - annual mortality by country - current policy.xlsx', index = False)
-df_annual_mortality_nz_total.to_excel('2 - output/script 5/s5.10 - 2 - annual mortality by country - nz 1.5c.xlsx', index = False)
+df_annual_mortality_cp_total.to_excel('2 - output/script 5/s5.30 - 1 - annual mortality by country - current policy - response upper.xlsx', index = False)
+df_annual_mortality_nz_total.to_excel('2 - output/script 5/s5.30 - 2 - annual mortality by country - nz 1.5c - response upper.xlsx', index = False)
 
 
 
