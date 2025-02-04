@@ -435,6 +435,130 @@ del t_df_concentration, t_df_country, t_scenario_results, sc
 
 
 
+
+# In[] MAX SHUTDOWN
+
+# -------------
+# population weighted
+
+# get dataframe
+df_concentration_max_pw = df_concentration_cp[['ISO_A3', 'population', 'max_shutdown']]
+
+# Get the unique countries in the dataset
+t_countries = df_concentration_max_pw['ISO_A3'].unique()
+
+# collect country results here
+t_country_results = {}
+
+# Loop over each country
+for t_country in t_countries:
+    # Filter the dataset for the current country
+    t_df_country = df_concentration_max_pw[df_concentration_max_pw['ISO_A3'] == t_country].copy()
+    
+    # Total population for the current country
+    t_total_population = t_df_country['population'].sum()
+    
+    # Compute the weighted values for each year and sum them
+    t_df_country_weighted = t_df_country['max_shutdown'].multiply(t_df_country['population'], axis=0).div(t_total_population).sum(axis=0)
+            
+    # Store the result in the dictionary with the country as the key
+    t_country_results[t_country] = t_df_country_weighted
+
+
+# convert into a single dataframe
+df_concentration_max_pw = pd.DataFrame.from_dict(t_country_results, orient='index', columns=['max_shutdown_pw'])
+df_concentration_max_pw.reset_index(inplace = True)
+df_concentration_max_pw.rename(columns={'index': 'Country'}, inplace=True)
+
+
+
+# -------------
+# population weighted
+
+# get dataframe
+df_concentration_max_npw = df_concentration_cp[['ISO_A3', 'population', 'max_shutdown']]
+
+# getaverage by country
+df_concentration_max_npw = df_concentration_max_npw.groupby('ISO_A3')[['max_shutdown']].mean()
+df_concentration_max_npw.reset_index(inplace = True)
+df_concentration_max_npw.rename(columns={'ISO_A3': 'Country', 'max_shutdown': 'max_shutdown_npw'}, inplace=True)
+
+
+# -------------
+# combine
+df_concentration_max = pd.merge(df_concentration_max_pw, df_concentration_max_npw, on = 'Country')
+df_concentration_max = pd.merge(df_concentration_max, df_concentration_cp_country_pw[['Country','2024']], on='Country')
+
+# -------------
+# delete
+del df_concentration_max_pw, df_concentration_max_npw
+del t_countries, t_country, t_country_results, t_df_country, t_df_country_weighted, t_total_population
+
+
+
+
+
+# In[] OVERALL FRACTIONAL CONTRIBUTION OF ENERGY SECTOR
+
+
+# -------------
+# populaition weighted mean
+# coal (ENEcoal) - pm2.5 contribution
+frac_contribution_coal_global_mean_pw = (df_concentration_cp['ENEcoal']
+                                         .multiply(df_concentration_cp['population'])
+                                         .div(df_concentration_cp['population'].sum())
+                                         .sum())
+print(frac_contribution_coal_global_mean_pw.round(3))
+# 0.049
+# or 4.9%
+
+
+# oil/gas (ENEother) - pm2.5 contribution
+frac_contribution_oilgas_global_mean_pw = (df_concentration_cp['ENEother']
+                                         .multiply(df_concentration_cp['population'])
+                                         .div(df_concentration_cp['population'].sum())
+                                         .sum())
+print(frac_contribution_oilgas_global_mean_pw.round(3))
+# 0.053
+# or 5.3%
+
+
+# total energy sector
+print((frac_contribution_coal_global_mean_pw + frac_contribution_oilgas_global_mean_pw).round(3))
+# 0.102
+# or 10.2%
+
+
+
+# -------------
+# simple average
+frac_contribution_coal_global_mean_npw = df_concentration_cp['ENEcoal'].mean()
+frac_contribution_oilgas_global_mean_npw = df_concentration_cp['ENEother'].mean()
+print((frac_contribution_coal_global_mean_npw+frac_contribution_oilgas_global_mean_npw).round(3))
+# 0.089
+# or 8.9%
+
+
+# In[] 2024 - vs 2035 COMPARISON
+
+df_comparison = df_concentration_nz_country_pw[['Country','2024', '2035']]
+df_comparison['change'] = df_comparison['2035']/df_comparison['2024']-1
+
+print(df_comparison['change'].describe())
+
+# count    138.000000
+# mean      -0.068804
+# std        0.063308
+# min       -0.248130
+# 25%       -0.108912
+# 50%       -0.070063
+# 75%       -0.023114
+# max        0.197618
+# Name: change, dtype: float64
+
+
+
+
 # In[] DELETE
 
 del df_population
@@ -459,3 +583,7 @@ df_concentration_nz_country_pw.to_excel('2 - output/script 4/s4.00 - 2.2 - annua
 df_concentration_cp_country_npw.to_excel('2 - output/script 4/s4.00 - 3.1 - annual concentration - country level - current policy - npw.xlsx', index = False)
 df_concentration_nz_country_npw.to_excel('2 - output/script 4/s4.00 - 3.2 - annual concentration - country level - net zero 1.5C - npw.xlsx', index = False)
 
+
+# --------------
+# shutdown scenario
+df_concentration_max.to_excel('2 - output/script 4/s4.00 - 4.1 - max shutdown results - weighted and unweighted.xlsx', index = False)

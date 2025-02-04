@@ -159,18 +159,18 @@ for country in country_codes:
     df_temp['mortality_diff_annual'] = df_temp['mortality_cp'] - df_temp['mortality_nz']
     df_temp['mortality_diff_cumulative'] = df_temp['mortality_diff_annual'].cumsum()
 
-    # # create difference CP vs NZ15 50%
-    # df_temp['mortality_diff_annual_nogrowth'] = df_temp['mortality_cp_nogrowth'] - df_temp['mortality_nz_nogrowth']
-    # df_temp['mortality_diff_cumulative_nogrowth'] = df_temp['diff_annual_nogrowth'].cumsum()
+    # # create difference CP vs NZ15 50% - no population growth
+    df_temp['mortality_diff_annual_nogrowth'] = df_temp['mortality_cp_nogrowth'] - df_temp['mortality_nz_nogrowth']
+    df_temp['mortality_diff_cumulative_nogrowth'] = df_temp['mortality_diff_annual_nogrowth'].cumsum()
 
 
     # calculate economic benefit
     df_temp['econ_benefit_cumulative_(mln $2019)'] = df_temp['mortality_diff_cumulative'] * vsl/ 1000000 # in millions
     df_temp['econ_benefit_discounted_cumulative_(mln $2019)'] = df_temp['econ_benefit_cumulative_(mln $2019)'] / (discount_rate ** df_temp.index)
 
-    # # calculate economic benefit
-    # df_temp['econ_benefit (mln) - nogrowth'] = df_temp['diff_cumulative_nogrowth'] * vsl/ 1000000 # in millions
-    # df_temp['econ_benefit_discounted (mln) - nogrowth'] = df_temp['econ_benefit (mln) - nogrowth'] / (discount_rate ** df_temp.index)
+    # calculate economic benefit - no population growth
+    df_temp['econ_benefit_cumulative_(mln $2019) - nogrowth'] = df_temp['mortality_diff_cumulative_nogrowth'] * vsl/ 1000000 # in millions
+    df_temp['econ_benefit_discounted_cumulative_(mln $2019) - nogrowth'] = df_temp['econ_benefit_cumulative_(mln $2019) - nogrowth'] / (discount_rate ** df_temp.index)
 
 
     # add VSL
