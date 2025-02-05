@@ -174,7 +174,7 @@ for i, (country, df_country, cmap, region) in enumerate(zip(countries, dataframe
                             markersize=5, vmin=vmin, vmax=vmax)
             
         # Increase the font size of the colorbar numbers
-        cax.tick_params(labelsize=12)
+        #cax.tick_params(labelsize=12)
 
         # Set title only for the first row of each column
         if i == 0:
@@ -309,7 +309,7 @@ for i, (country, df_country, cmap, region) in enumerate(zip(countries, dataframe
                             markersize=5, vmin=vmin, vmax=vmax)
             
         # Increase the font size of the colorbar numbers
-        cax.tick_params(labelsize=12)
+        #cax.tick_params(labelsize=12)
 
         # Set title only for the first row of each column
         if i == 0:
