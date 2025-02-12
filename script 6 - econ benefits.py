@@ -93,6 +93,47 @@ df_vsl = df_vsl.groupby('Country - iso3c')['Age-invariant VSL-Mean'].mean().rese
 
 # country names & ilness for loop
 country_codes = list(df_annual_mortality_cp_total['Country'].unique())
+country_vsl = list(df_vsl['Country - iso3c'].unique())
+missing = list(set(country_codes) - set(country_vsl))
+print(missing)
+['HKG', 'ABW', 'IMN', 'ESH', 'XKX', 'CYM', 'MAC', 'GUF', 'NCL']
+
+
+# Define the country mapping
+country_mapping = {
+    "HKG": "CHN",  # Hong Kong -> China
+    "ABW": "VEN",  # Aruba -> Venezuela
+    "IMN": "GBR",  # Isle of Man -> United Kingdom
+    "ESH": "MRT",  # Western Sahara -> Mauritania
+    "XKX": "MKD",  # Kosovo -> North Macedonia
+    "CYM": "JAM",  # Cayman Islands -> Jamaica
+    "MAC": "CHN",  # Macau -> China
+    "GUF": "SUR",  # French Guiana -> Suriname
+    "NCL": "AUS"   # New Caledonia -> Australia
+}
+
+# Create a list to store new country data
+df_new_entries = []
+
+# Loop through each target country and replicate data from the source country
+for target_country, source_country in country_mapping.items():
+    # Get rows where the source country matches
+    df_source = df_vsl[df_vsl['Country - iso3c'] == source_country].copy()
+    
+    # Replace source country info with target country
+    df_source['Country - iso3c'] = target_country  # Update ISO Alpha-3 code
+    
+    # Append modified data to the list
+    df_new_entries.append(df_source)
+
+# Concatenate new rows with the existing DataFrame
+df_vsl = pd.concat([df_vsl] + df_new_entries, ignore_index=True)
+
+
+
+
+
+
 
 
 # variable 

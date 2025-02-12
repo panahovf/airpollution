@@ -84,6 +84,15 @@ df_cp_power = pd.read_excel(r'C:\Users\panah\OneDrive\Desktop\Work\2 - RA - Clim
 df_nz_power = pd.read_excel(r'C:\Users\panah\OneDrive\Desktop\Work\2 - RA - Climate fin\2 - output\script 4.2\6.1 - NZ-15-50 - v2 - Secondary - annual.xlsx')
 
 
+# --------------
+# LOAD ORIGINAL POWER DATA FROM FORWARD ANALYTICS --- and filter for only operating fossil fuel power plants
+df_power = pd.read_csv(r'C:\Users\panah\OneDrive\Desktop\Work\2 - RA - Climate fin\1 - input\v3_power_Forward_Analytics2024.csv')
+df_power = df_power[df_power['subsector'].isin(['Coal','Oil','Gas'])]
+df_power = df_power[df_power['status'] == "operating"]
+df_power.loc[df_power['countryiso3'] == 'TZ1', 'countryiso3'] = 'TZA'
+df_power = df_power.loc[df_power['countryiso3'] != 'unknown']
+
+
 
 
 
@@ -218,12 +227,12 @@ reductions = {}
 
 for sc in scenarios:
     # Access the relevant DataFrame using `globals`
-    df_power = globals()[f"df_{sc}_power"].copy()
+    df_power_scenario = globals()[f"df_{sc}_power"].copy()
 
     # Calculate the reduction
     # Fill NA(0) can happen if country doesnt have fossil fuel type in 2024 and stays that way
-    df_power_reduction = df_power.copy()
-    df_power_reduction[year_columns] = (1 - df_power[year_columns].div(df_power['2024'], axis=0)).fillna(0)
+    df_power_reduction = df_power_scenario.copy()
+    df_power_reduction[year_columns] = (1 - df_power_scenario[year_columns].div(df_power_scenario['2024'], axis=0)).fillna(0)
 
     # Store the result in a dictionary for later use
     reductions[f"{sc}_power_reduction"] = df_power_reduction
@@ -252,7 +261,7 @@ df_nz_power_reduction[year_columns] = df_nz_power_reduction[year_columns].replac
 
 # --------------
 # delete
-del reductions, sc, df_power, df_power_reduction
+del reductions, sc, df_power_scenario, df_power_reduction
 del df_cp_power, df_nz_power
 
 
@@ -275,10 +284,10 @@ del df_cp_power, df_nz_power
 # --------------
 # copy dataframes for NZ and CP 2024-2050 extension based on emissions path
 df_concentration_nz = df_concentration.copy()
-df_concentration_nz = df_concentration_nz[df_concentration_nz['ISO_A3'].isin(df_nz_power_reduction['Region'])]
+df_concentration_nz = df_concentration_nz[df_concentration_nz['ISO_A3'].isin(df_power['countryiso3'])]
 
 df_concentration_cp = df_concentration.copy()
-df_concentration_cp = df_concentration_cp[df_concentration_cp['ISO_A3'].isin(df_cp_power_reduction['Region'])]
+df_concentration_cp = df_concentration_cp[df_concentration_cp['ISO_A3'].isin(df_power['countryiso3'])]
 
 
 # --------------
@@ -292,20 +301,28 @@ for sc in scenarios:
     t_results = []
 
     # Get unique countries
-    t_countries = t_df_concentration['ISO_A3'].unique()
+    t_countries = df_power['countryiso3'].unique()
 
     # Loop over each country
     for t_country in t_countries:
+        
+        t_country_ngfs = t_country
+        
+        # Here if country doesnt exits in NGFS model, set 'Downscaling|Countries without IEA statistics' path for it
+        if t_country_ngfs not in df_cp_power_reduction['Region'].values:
+            t_country_ngfs = 'Downscaling|Countries without IEA statistics'
+
+        
         # Filter the concentration DataFrame and reduction DataFrame for the current country
         t_df_country = t_df_concentration[t_df_concentration['ISO_A3'] == t_country].copy()
 
         t_coal_reduction_path = t_df_power_reduction[
             (t_df_power_reduction['fuel_type'] == 'Coal') & 
-            (t_df_power_reduction['Region'] == t_country)]
+            (t_df_power_reduction['Region'] == t_country_ngfs)]
 
         t_oilgas_reduction_path = t_df_power_reduction[
             (t_df_power_reduction['fuel_type'] == 'O&G') & 
-            (t_df_power_reduction['Region'] == t_country)]
+            (t_df_power_reduction['Region'] == t_country_ngfs)]
 
         # Perform calculations for all years
         for t_year in year_columns:
@@ -314,7 +331,7 @@ for sc in scenarios:
             t_oilgas_reduction_value = t_oilgas_reduction_path[t_year].values[0] if not t_oilgas_reduction_path.empty else 0
 
             # Calculate reductions
-            t_df_country[t_year] = t_df_country['concentration'] - (
+            t_df_country.loc[:,t_year] = t_df_country['concentration'] - (
                 t_df_country['factor_coal'] * t_coal_reduction_value + t_df_country['factor_oilgas'] * t_oilgas_reduction_value)
 
         # Append the processed country DataFrame to the results list
@@ -327,8 +344,8 @@ for sc in scenarios:
 # delete
 del t_coal_reduction_path, t_coal_reduction_value, t_countries, t_country, t_df_concentration
 del t_df_country, t_df_power_reduction, t_oilgas_reduction_path, t_oilgas_reduction_value, t_results, t_year
-del sc
-del df_concentration, df_cp_power_reduction, df_nz_power_reduction
+del sc, t_country_ngfs
+del df_concentration
 
 
 
@@ -336,8 +353,8 @@ del df_concentration, df_cp_power_reduction, df_nz_power_reduction
 # In[]: GET POPULATION WEIGHTED CONCENTRATION VALUES
 #####################################################
 
-print('Latest included population estimate is: ',df_concentration_nz['population'].sum().round())
-print('Share of global population missed:', ((1 - (df_concentration_nz['population'].sum()/df_population['population'].sum()))*100).round(2), '%')
+print('Latest directly included population estimate is: ',df_concentration_nz['population'].sum().round())
+print('Share of global population missed or included within "Downscaling|Countries without IEA statistics":', ((1 - (df_concentration_nz['population'].sum()/df_population['population'].sum()))*100).round(2), '%')
 print('Absolute shortall: ',((df_population['population'].sum() - df_concentration_nz['population'].sum())/10**9).round(2), "billion")
 # Latest included population estimate is:  7322802593.0
 # Share of global population missed: 6.61 %
@@ -366,13 +383,13 @@ for sc in scenarios:
         t_total_population = t_df_country['population'].sum()
         
         # Compute the weighted values for each year and sum them
-        t_df_country_weighted = t_df_country[year_columns].multiply(t_df_country['population'], axis=0).div(t_total_population).sum(axis=0)
+        t_df_country_weighted = t_df_country[['ENEcoal', 'ENEother' , 'max_shutdown'] + year_columns].multiply(t_df_country['population'], axis=0).div(t_total_population).sum(axis=0)
                 
         # Store the result in the dictionary with the country as the key
         t_country_results[t_country] = t_df_country_weighted
        
     # Store the scenario results as DF in the dictionary
-    t_scenario_results[sc] = pd.DataFrame.from_dict(t_country_results, orient='index', columns=year_columns)
+    t_scenario_results[sc] = pd.DataFrame.from_dict(t_country_results, orient='index', columns= ['ENEcoal', 'ENEother' , 'max_shutdown'] + year_columns)
 
 # Access the results
 df_concentration_cp_country_pw = t_scenario_results['cp'].reset_index().rename(columns={'index': 'Country'})
@@ -417,7 +434,7 @@ for sc in scenarios:
     t_df_concentration = globals()[f"df_concentration_{sc}"]
     
     # Group by country and compute the mean for each year
-    t_df_country = t_df_concentration.groupby('ISO_A3')[year_columns].mean()
+    t_df_country = t_df_concentration.groupby('ISO_A3')[['ENEcoal', 'ENEother' , 'max_shutdown'] + year_columns].mean()
 
     # Directly store the resulting DataFrame in the dictionary
     t_scenario_results[sc] = t_df_country
@@ -438,61 +455,61 @@ del t_df_concentration, t_df_country, t_scenario_results, sc
 
 # In[] MAX SHUTDOWN
 
-# -------------
-# population weighted
+# # -------------
+# # population weighted
 
-# get dataframe
-df_concentration_max_pw = df_concentration_cp[['ISO_A3', 'population', 'max_shutdown']]
+# # get dataframe
+# df_concentration_max_pw = df_concentration_cp[['ISO_A3', 'population', 'max_shutdown']]
 
-# Get the unique countries in the dataset
-t_countries = df_concentration_max_pw['ISO_A3'].unique()
+# # Get the unique countries in the dataset
+# t_countries = df_concentration_max_pw['ISO_A3'].unique()
 
-# collect country results here
-t_country_results = {}
+# # collect country results here
+# t_country_results = {}
 
-# Loop over each country
-for t_country in t_countries:
-    # Filter the dataset for the current country
-    t_df_country = df_concentration_max_pw[df_concentration_max_pw['ISO_A3'] == t_country].copy()
+# # Loop over each country
+# for t_country in t_countries:
+#     # Filter the dataset for the current country
+#     t_df_country = df_concentration_max_pw[df_concentration_max_pw['ISO_A3'] == t_country].copy()
     
-    # Total population for the current country
-    t_total_population = t_df_country['population'].sum()
+#     # Total population for the current country
+#     t_total_population = t_df_country['population'].sum()
     
-    # Compute the weighted values for each year and sum them
-    t_df_country_weighted = t_df_country['max_shutdown'].multiply(t_df_country['population'], axis=0).div(t_total_population).sum(axis=0)
+#     # Compute the weighted values for each year and sum them
+#     t_df_country_weighted = t_df_country['max_shutdown'].multiply(t_df_country['population'], axis=0).div(t_total_population).sum(axis=0)
             
-    # Store the result in the dictionary with the country as the key
-    t_country_results[t_country] = t_df_country_weighted
+#     # Store the result in the dictionary with the country as the key
+#     t_country_results[t_country] = t_df_country_weighted
 
 
-# convert into a single dataframe
-df_concentration_max_pw = pd.DataFrame.from_dict(t_country_results, orient='index', columns=['max_shutdown_pw'])
-df_concentration_max_pw.reset_index(inplace = True)
-df_concentration_max_pw.rename(columns={'index': 'Country'}, inplace=True)
+# # convert into a single dataframe
+# df_concentration_max_pw = pd.DataFrame.from_dict(t_country_results, orient='index', columns=['max_shutdown_pw'])
+# df_concentration_max_pw.reset_index(inplace = True)
+# df_concentration_max_pw.rename(columns={'index': 'Country'}, inplace=True)
 
 
 
-# -------------
-# population weighted
+# # -------------
+# # population weighted
 
-# get dataframe
-df_concentration_max_npw = df_concentration_cp[['ISO_A3', 'population', 'max_shutdown']]
+# # get dataframe
+# df_concentration_max_npw = df_concentration_cp[['ISO_A3', 'population', 'max_shutdown']]
 
-# getaverage by country
-df_concentration_max_npw = df_concentration_max_npw.groupby('ISO_A3')[['max_shutdown']].mean()
-df_concentration_max_npw.reset_index(inplace = True)
-df_concentration_max_npw.rename(columns={'ISO_A3': 'Country', 'max_shutdown': 'max_shutdown_npw'}, inplace=True)
+# # getaverage by country
+# df_concentration_max_npw = df_concentration_max_npw.groupby('ISO_A3')[['max_shutdown']].mean()
+# df_concentration_max_npw.reset_index(inplace = True)
+# df_concentration_max_npw.rename(columns={'ISO_A3': 'Country', 'max_shutdown': 'max_shutdown_npw'}, inplace=True)
 
 
-# -------------
-# combine
-df_concentration_max = pd.merge(df_concentration_max_pw, df_concentration_max_npw, on = 'Country')
-df_concentration_max = pd.merge(df_concentration_max, df_concentration_cp_country_pw[['Country','2024']], on='Country')
+# # -------------
+# # combine
+# df_concentration_max = pd.merge(df_concentration_max_pw, df_concentration_max_npw, on = 'Country')
+# df_concentration_max = pd.merge(df_concentration_max, df_concentration_cp_country_pw[['Country','2024']], on='Country')
 
-# -------------
-# delete
-del df_concentration_max_pw, df_concentration_max_npw
-del t_countries, t_country, t_country_results, t_df_country, t_df_country_weighted, t_total_population
+# # -------------
+# # delete
+# del df_concentration_max_pw, df_concentration_max_npw
+# del t_countries, t_country, t_country_results, t_df_country, t_df_country_weighted, t_total_population
 
 
 
@@ -555,6 +572,114 @@ print(df_comparison['change'].describe())
 # 75%       -0.023114
 # max        0.197618
 # Name: change, dtype: float64
+
+
+
+# In[] ADD SELECT COUNTRIES MANUALLY
+
+# Add Taiwan, New Zealand, Western Sahara, French Guiana
+# these were in original power plants dataset, but missing due to concentration/fractional contribution not mapping
+
+# also add Kosovo (it is in tha table in the paper)
+
+# create manual dataframe
+df_manual = pd.DataFrame({"Country": ["TWN", "NZL", "ESH", "GUF", "XKX"]})
+df_manual[['ENEcoal', 'ENEother' , 'max_shutdown']+year_columns] = ""
+  
+                                   
+# Define country mapping for replication
+country_mapping = {
+    "TWN": "CHN",  # Taiwan -> China
+    "NZL": "AUS",  # New Zealand -> Australia
+    "ESH": "MRT",  # Western Sahara -> Mauritania
+    "GUF": "SUR",  # French Guiana -> Suriname
+    "XKX": "MKD"   # Kosovo -> North Macedonia
+}
+
+columns_to_replicate = ['ENEcoal', 'ENEother', 'max_shutdown', '2024']
+
+
+
+# Replicate values for each mapped country in both dataframes
+for target_country, source_country in country_mapping.items():
+
+    source_values_cp = df_concentration_cp_country_pw.loc[df_concentration_cp_country_pw['Country'] == source_country, columns_to_replicate]
+    df_manual.loc[df_manual['Country'] == target_country, columns_to_replicate] = source_values_cp.values
+
+
+
+df_manual_cp = df_manual.copy()
+df_manual_nz = df_manual.copy()
+
+
+# Define the list of newly added countries
+added_countries = ["TWN", "NZL", "ESH", "GUF", "XKX"]
+
+# Loop through scenarios
+for sc in scenarios:
+    # Dynamically access scenario-specific DataFrames
+    t_df_concentration = globals()[f"df_manual_{sc}"].copy()
+    t_df_power_reduction = globals()[f"df_{sc}_power_reduction"].copy()
+
+    # Initialize an empty list to store results for the added countries
+    t_results = []
+
+    # Loop over the five added countries only
+    for t_country in added_countries:
+               
+        # Get the mapped country for emissions paths if applicable
+        t_country_ngfs = t_country
+        
+        # If country is missing from NGFS model, set 'Downscaling|Countries without IEA statistics'
+        if t_country_ngfs not in df_cp_power_reduction['Region'].values:
+            t_country_ngfs = 'Downscaling|Countries without IEA statistics'
+
+        # Filter the concentration DataFrame and reduction DataFrame for the current country
+        t_df_country = t_df_concentration[t_df_concentration['Country'] == t_country].copy()
+
+        t_coal_reduction_path = t_df_power_reduction[
+            (t_df_power_reduction['fuel_type'] == 'Coal') & 
+            (t_df_power_reduction['Region'] == t_country_ngfs)
+        ]
+
+        t_oilgas_reduction_path = t_df_power_reduction[
+            (t_df_power_reduction['fuel_type'] == 'O&G') & 
+            (t_df_power_reduction['Region'] == t_country_ngfs)
+        ]
+
+        # Perform calculations for all years
+        for t_year in year_columns:
+            # If no reduction data for the country, default to 0
+            t_coal_reduction_value = t_coal_reduction_path[t_year].values[0] if not t_coal_reduction_path.empty else 0
+            t_oilgas_reduction_value = t_oilgas_reduction_path[t_year].values[0] if not t_oilgas_reduction_path.empty else 0
+
+            # Calculate reductions
+            t_df_country[t_year] = t_df_country['2024'] - (
+                t_df_country['ENEcoal'] * t_coal_reduction_value +
+                t_df_country['ENEother'] * t_oilgas_reduction_value
+            )
+
+        # Append the processed country DataFrame to the results list
+        t_results.append(t_df_country)
+
+    # Combine all the country results back into the scenario DataFrame
+    globals()[f"df_manual_{sc}_filled"] = pd.concat(t_results, ignore_index=True)
+
+
+
+
+
+
+
+# In[] ADD MANUALS
+
+df_concentration_cp_country_pw = pd.concat([df_concentration_cp_country_pw, df_manual_cp_filled], ignore_index=True)
+df_concentration_nz_country_pw = pd.concat([df_concentration_nz_country_pw, df_manual_nz_filled], ignore_index=True)
+
+
+# improve this later --- nwp should be separately done as in previous step
+df_concentration_cp_country_npw = pd.concat([df_concentration_cp_country_npw, df_manual_cp_filled], ignore_index=True)
+df_concentration_nz_country_npw = pd.concat([df_concentration_nz_country_npw, df_manual_nz_filled], ignore_index=True)
 
 
 

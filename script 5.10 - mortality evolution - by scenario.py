@@ -49,12 +49,15 @@ df_concentration_cp = df_concentration_cp.melt(
     var_name='Year', 
     value_name='concentration'
 )
+df_concentration_cp = df_concentration_cp[~df_concentration_cp['Year'].isin(['ENEcoal', 'ENEother', 'max_shutdown'])]
 
 df_concentration_nz = df_concentration_nz.melt(
     id_vars=['Country'], 
     var_name='Year', 
     value_name='concentration'
 )
+df_concentration_nz = df_concentration_nz[~df_concentration_nz['Year'].isin(['ENEcoal', 'ENEother', 'max_shutdown'])]
+
 
 df_concentration_cp['Year'] = df_concentration_cp['Year'].astype(int) # set years as integers
 df_concentration_nz['Year'] = df_concentration_nz['Year'].astype(int)
@@ -236,21 +239,50 @@ countries_mortality = list(df_mortality['alpha-3'].unique())
 # missing countries (countries in NGFS but not in Mortality)
 missing = list(set(countries_ngfs) - set(countries_mortality))
 print(missing)
-#['HKG']
-# there is only 1 country missing. leaving it out
+# ['HKG', 'ABW', 'IMN', 'ESH', 'XKX', 'CYM', 'MAC', 'GUF', 'NCL']
 
-# common countries
-countries = list(set(countries_ngfs) & set(countries_mortality))
+
+
+# Define the country mapping
+country_mapping = {
+    "HKG": "CHN",  # Hong Kong -> China
+    "ABW": "VEN",  # Aruba -> Venezuela
+    "IMN": "GBR",  # Isle of Man -> United Kingdom
+    "ESH": "MRT",  # Western Sahara -> Mauritania
+    "XKX": "MKD",  # Kosovo -> North Macedonia
+    "CYM": "JAM",  # Cayman Islands -> Jamaica
+    "MAC": "CHN",  # Macau -> China
+    "GUF": "SUR",  # French Guiana -> Suriname
+    "NCL": "AUS"   # New Caledonia -> Australia
+}
+
+# Create an empty list to store replicated data
+df_new_entries = []
+
+# Loop through each target country and replicate data from the source country
+for target_country, source_country in country_mapping.items():
+    # Get rows where the source country matches
+    df_source = df_mortality[df_mortality['alpha-3'] == source_country].copy()
+    
+    # Replace source country info with target country
+    df_source['Location'] = target_country  # Update location name if needed
+    df_source['name'] = target_country
+    df_source['alpha-3'] = target_country  # Update ISO Alpha-3 code
+    
+    # Append modified data to the list
+    df_new_entries.append(df_source)
+
+# Concatenate new rows with the existing DataFrame
+df_mortality = pd.concat([df_mortality] + df_new_entries, ignore_index=True)
+
+
 
 
 df_annual_mortalityrate_cp_total = df_attirubtion_cp.copy()
 df_annual_mortalityrate_nz_total = df_attirubtion_nz.copy()
 
-df_annual_mortalityrate_cp_total = df_annual_mortalityrate_cp_total[df_annual_mortalityrate_cp_total['Country'].isin(countries)]
-df_annual_mortalityrate_nz_total = df_annual_mortalityrate_nz_total[df_annual_mortalityrate_nz_total['Country'].isin(countries)]
 
-
-for country in countries:
+for country in countries_ngfs:
     # Filter mortality data for the current country
     temp_mortality = df_mortality[df_mortality['alpha-3'] == country]
     
@@ -298,6 +330,51 @@ del df_pop_project
 
 
 
+# get list of countries
+countries_ngfs = list(df_attirubtion_cp['Country'].unique())
+countries_mortality = list(df_pop_cleaned['Country Code'].unique())
+
+# missing countries (countries in NGFS but not in Mortality)
+missing = list(set(countries_ngfs) - set(countries_mortality))
+print(missing)
+# ['TWN', 'ESH', 'GUF']
+
+print(df_pop_cleaned.loc[df_pop_cleaned['Country Code'].isin(countries_ngfs) & df_pop_cleaned['Population'].isna(), 'Country Code'].unique())
+# ['BMU']
+
+# https://www.worldometers.info/world-population/china-hong-kong-sar-population/
+# https://www.worldometers.info/world-population/western-sahara-population/
+# https://www.worldometers.info/world-population/french-guiana-population/
+# https://www.worldometers.info/world-population/bermuda-population/
+
+# Define the country list and their population estimates
+countries = ['TWN', 'ESH', 'GUF', 'BMU']
+population_2024 = [7414909, 590506, 308522, 64,636]
+population_2050 = [6090619, 777316, 471916, 56,937]
+
+# Define the range of years
+years = list(range(2024, 2051))
+
+# Create an empty list to store data
+data = []
+
+# Interpolate population growth for each country
+for i, country in enumerate(countries):
+    # Generate interpolated population values
+    population_values = np.linspace(population_2024[i], population_2050[i], len(years))
+    
+    # Append rows for each year
+    for j, year in enumerate(years):
+        data.append([country, year, population_values[j], population_values[j] / 100000])  # Also compute per 100K
+
+# Create DataFrame
+df_population_interpolated = pd.DataFrame(data, columns=['Country Code', 'Year', 'Population', '100K population'])
+
+
+# add to total population
+df_pop_cleaned = pd.concat([df_pop_cleaned, df_population_interpolated], ignore_index=True)
+
+df_pop_cleaned = df_pop_cleaned[~df_pop_cleaned['Population'].isna()]
 
 
 
@@ -325,6 +402,12 @@ df_annual_mortality_nz_total = pd.merge(
     right_on=['Country Code', 'Year'],  # Specify the keys from the right DataFrame
     how='left'  # Merge type
 ).drop(columns=['Country Code'])
+
+
+
+
+
+
 
 
 
