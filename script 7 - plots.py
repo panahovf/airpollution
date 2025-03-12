@@ -181,7 +181,11 @@ plt.rcParams['text.usetex'] = False
 #             '2030nz', '2035nz', '2050nz', '2030cp', '2035cp', '2050cp'
 # For Plot 2: 'avoideddeathannual_2030', 'avoideddeathannual_2035', 'avoideddeathannual_2050',
 #             'avoideddeathcum_2030', 'avoideddeathcum_2035', 'avoideddeathcum_2050'
-# For Plot 3 & Plot 4, placeholders are provided.
+# For Plot 3: 'gdppercapita', 'vsl'
+# For Plot 4: 'benefit_2030',
+#             'benefit_2035' - 'benefit_2030' & 'benefit_2050' - 'benefit_2035'
+
+
 
 # Get the list of countries (assumed to be in the desired order)
 countries = df_master['country'].tolist()
@@ -402,5 +406,5 @@ ax4.grid(True, linestyle='--', alpha=0.5)
 # Final adjustments and display
 #############################################
 fig.tight_layout()
-fig.savefig('hero graph.png', dpi=1200, bbox_inches='tight')
+#fig.savefig('hero graph.png', dpi=1200, bbox_inches='tight')
 plt.show()
