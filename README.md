@@ -44,6 +44,14 @@ Once the new PM2.5 concentration levels are estimated, the standard methodology 
 The CRF for each of the six diseases establishes what fraction of baseline deaths for that disease can be attributed to air pollution. 
 To then determine the economic value of avoided mortalities because of lower air pollution, an economic value is attached to a human life. Typically, the “Value of a Statistical Life” (VSL) is used.
 
+___
+**Figure 2: Air pollution, avoided deaths and monetary impact**
+<br>
+&nbsp;
+![Alt text](https://github.com/panahovf/airpollution/blob/f902a9f6a5a08c15854460e4586e374f41ee8093/images/hero%20graph.png)
+___
+<br>
+
 
 We will follow the standard approach to air pollution modeling throughout, as our innovation does not aim to be the air pollution modeling itself; rather, our innovation is its novel application to how gradually phasing out fossil fuels in the power sector results in air pollution economic health benefits. 
 The only component of the air pollution modeling where we make a purposeful simplification is in the translation from fossil fuel reduction to reduced air pollution levels. 
@@ -154,16 +162,16 @@ Thus, the ratio P<sub>y,z,t</sub> / P<sub>y,t</sub> serves as a weight for obtai
 Global grid levels across the multiple datasets used in this study are adjusted to a common spatial resolution of 1 km × 1 km.
 
 
-In the **left panel** of *Figure 2*, we show the unweighted PM2.5 concentration, <span style="text-decoration: overline;">C</span><sup>t<sub>2021</sub></sup><sub>y</sub>, 
+In the **left panel** of *Figure 3*, we show the unweighted PM2.5 concentration, <span style="text-decoration: overline;">C</span><sup>t<sub>2021</sub></sup><sub>y</sub>, 
 (from the equation above) and the population‐weighted PM2.5 concentration, C<sup>t<sub>2021</sub></sup><sub>y</sub>, for each country *y* according to our data. 
 In the **right panel**, we compare the population‐weighted PM2.5 concentration levels (aggregated from our 1 km × 1 km grid data) to those reported by the World Bank for 2020 (latest available) and find these are fairly consistent (i.e., they lie along the 45° line), illustrating that our data is consistent with another authoritative source.
 
 
-In the **left panel** of *Figure 2*, we show the unweighted <span style="text-decoration: overline;">C</span><sup>t<sub>2021</sub></sup><sub>y</sub> and the population‐weighted C<sup>t<sub>2021</sub></sup><sub>y</sub> for each country *y*. In the **right panel**,
+In the **left panel** of *Figure 3*, we show the unweighted <span style="text-decoration: overline;">C</span><sup>t<sub>2021</sub></sup><sub>y</sub> and the population‐weighted C<sup>t<sub>2021</sub></sup><sub>y</sub> for each country *y*. In the **right panel**,
 we compare the population‐weighted C<sup>t<sub>2021</sub></sup><sub>y</sub> estimates to those of the World Bank 2020 and find high consistency, demonstrating the reliability of our data.
 
 ___
-**Figure 2: PM2.5 air pollution concentration (μg/m3) estimates**
+**Figure 3: PM2.5 air pollution concentration (μg/m3) estimates**
 <br>
 &nbsp;
 ![Alt text](https://github.com/panahovf/airpollution/blob/2aba9a79593a15b05b3c08c3b36c3ca03d734bfd/images/AirPollutionComparisonWorldBank.png)
@@ -171,10 +179,10 @@ ___
 <br>
 
 
-In *Figure 3*, we show projections of the PM2.5 concentration C<sup>s₂</sup><sub>y, z, t</sub> at the grid level (see the earlier equation for projected concentration) for 2025, 2030, and 2035, along with their population‐weighted country average, under the 1.5°C 50% carbon-budget consistent net‐zero 2050 scenario (*s = s₂*).
+In *Figure 4*, we show projections of the PM2.5 concentration C<sup>s₂</sup><sub>y, z, t</sub> at the grid level (see the earlier equation for projected concentration) for 2025, 2030, and 2035, along with their population‐weighted country average, under the 1.5°C 50% carbon-budget consistent net‐zero 2050 scenario (*s = s₂*).
 
 ___
-**Figure 3: Projections (for 2025, 2030, 2035) of the PM2.5 air pollution concentration (μg/m3)
+**Figure 4: Projections (for 2025, 2030, 2035) of the PM2.5 air pollution concentration (μg/m3)
 estimates at the grid level and their country level (population-weighted) average for eight de-
 veloping countries**
 <br>
@@ -187,10 +195,10 @@ ___
 ### Step 2: Mortality impact
 
 Having estimated PM2.5 concentration into 2050 under current policies (s = s₁) and the net‐zero 1.5°C 50% (s = s₂) scenarios, we proceed with identifying impacts on mortality rates. 
-To do this, we make use of the “concentration response functions” R<sub>d</sub> which have been developed for each disease d attributable to air pollution; see *Figure 4*.
+To do this, we make use of the “concentration response functions” R<sub>d</sub> which have been developed for each disease d attributable to air pollution; see *Figure 5*.
 
 ___
-**Figure 4: Concentration response functions Rd for each disease d**
+**Figure 5: Concentration response functions Rd for each disease d**
 
 ![Alt text](https://github.com/panahovf/airpollution/blob/882068a7241924c1aec16f0a889efea541c51a17/images/methodology%20-%20response%20functions.png)
 ___
